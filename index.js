@@ -1,8 +1,17 @@
 const express = require("express");
 const cors = require("cors");
 require ("dotenv").config();
+const admin = require("firebase-admin");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT
+
+// index.js
+const decoded = Buffer.from(process.env.FB_SERVICE_KEY, "base64").toString("utf8");
+const serviceAccount = JSON.parse(decoded);
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
 
 const app = express();
 app.use(cors());
@@ -23,6 +32,32 @@ const client = new MongoClient(uri,  {
 app.get('/', (req, res)=>{
   res.send('PawMart is running')
 });
+
+const varifyFBToken = async(req, res, next)=>{
+    const header = req.headers.authorization;
+    if(!header){
+        return res
+            .status(401)
+            .send({message: "Unauthorize access."})
+    }
+    const token = header.split(' ')[1];
+    if(!token){
+        return res
+            .status(401)
+            .send({message: "Unauthorize access.."})
+    }
+    try{
+        const tokenDetails = await admin.auth().verifyIdToken(token)
+        req.user_email = tokenDetails.email;
+        console.log(tokenDetails.email)
+        next();
+    } catch(err){
+        console.log('...', err)
+        return res
+            .status(401)
+            .send({message: "Unauthorize access..."})
+    }
+}
 
 async function run() {
   try {
@@ -62,7 +97,7 @@ async function run() {
         const result= await listingsCollection.find().sort({created_at:-1}).limit(3).toArray()
         res.send(result)
     })
-    app.post("/listings", async(req, res)=>{
+    app.post("/listings", varifyFBToken, async(req, res)=>{
         const query = req.body
         const date= new Date().toISOString()
         query.created_at= date
@@ -124,7 +159,7 @@ async function run() {
     })
 
 
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error

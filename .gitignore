@@ -1,2 +1,4 @@
 node_modules
 .env
+.vercel
+paw-mart-47a12-firebase-adminsdk.json
