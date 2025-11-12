@@ -94,7 +94,7 @@ async function run() {
         res.send(result)
     })
     app.get("/latest-listings", async(req, res)=>{
-        const result= await listingsCollection.find().sort({created_at:-1}).limit(3).toArray()
+        const result= await listingsCollection.find().sort({created_at:-1}).limit(6).toArray()
         res.send(result)
     })
     app.post("/listings", varifyFBToken, async(req, res)=>{
@@ -106,8 +106,8 @@ async function run() {
     })
     // MY-LIST
     app.get("/my-list", async(req, res)=>{
-        const my_list = req.query.my_list
-        const result = await listingsCollection.find({seller_email:my_list}).toArray()
+        const user_email = req.query.user_email
+        const result = await listingsCollection.find({email:user_email}).toArray()
         res.send(result)
     })
     // LISTING ITEM
