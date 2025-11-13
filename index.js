@@ -49,7 +49,6 @@ const varifyFBToken = async(req, res, next)=>{
     try{
         const tokenDetails = await admin.auth().verifyIdToken(token)
         req.user_email = tokenDetails.email;
-        console.log(tokenDetails.email)
         next();
     } catch(err){
         console.log('...', err)
@@ -106,7 +105,7 @@ async function run() {
     })
     // MY-LIST
     app.get("/my-list",varifyFBToken, async(req, res)=>{
-        const user_email = req.query.user_email //will be replaced by email from verify
+        const user_email = req.user_email 
         const result = await listingsCollection.find({email:user_email}).toArray()
         res.send(result)
     })
@@ -137,7 +136,7 @@ async function run() {
 
     // ORDERS
     app.get("/orders", async(req, res)=>{
-        const user_email = req.query.user_email; //will be replaced by email from verify
+        const user_email = req.user_email; 
         if(user_email){
             const result = await ordersCollection.find({buyer_email: user_email}).toArray();
             return res.send(result)
