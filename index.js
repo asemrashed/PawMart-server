@@ -135,14 +135,12 @@ async function run() {
     })
 
     // ORDERS
-    app.get("/orders", async(req, res)=>{
+    app.get("/orders", varifyFBToken, async(req, res)=>{
         const user_email = req.user_email; 
         if(user_email){
             const result = await ordersCollection.find({buyer_email: user_email}).toArray();
             return res.send(result)
         }
-        const result = await ordersCollection.find().toArray();
-        res.send(result)
     })
     app.post("/orders",varifyFBToken, async(req, res)=>{
         const newOrder = req.body;
