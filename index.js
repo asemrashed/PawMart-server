@@ -105,7 +105,7 @@ async function run() {
         res.send(result)
     })
     // MY-LIST
-    app.get("/my-list", async(req, res)=>{
+    app.get("/my-list",varifyFBToken, async(req, res)=>{
         const user_email = req.query.user_email //will be replaced by email from verify
         const result = await listingsCollection.find({email:user_email}).toArray()
         res.send(result)
@@ -117,7 +117,7 @@ async function run() {
         const result = await listingsCollection.findOne(query)
         res.send(result)
     })
-    app.patch("/listings/:id", async(req, res)=>{
+    app.patch("/listings/:id",varifyFBToken, async(req, res)=>{
         const {id} = req.params;
         const updates = req.body;
         if (!updates || Object.keys(updates).length === 0) {
@@ -128,7 +128,7 @@ async function run() {
         const result = await listingsCollection.updateOne(query, cursor)
         res.send(result)
     })
-    app.delete("/listings/:id", async(req, res)=>{
+    app.delete("/listings/:id",varifyFBToken, async(req, res)=>{
         const {id} = req.params;
         const query = {_id: new ObjectId(id)};
         const result = await listingsCollection.deleteOne(query)
@@ -145,7 +145,7 @@ async function run() {
         const result = await ordersCollection.find().toArray();
         res.send(result)
     })
-    app.post("/orders", async(req, res)=>{
+    app.post("/orders",varifyFBToken, async(req, res)=>{
         const newOrder = req.body;
         const result = await ordersCollection.insertOne(newOrder);
         res.send(result)
