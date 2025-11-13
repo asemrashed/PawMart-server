@@ -106,7 +106,7 @@ async function run() {
     })
     // MY-LIST
     app.get("/my-list", async(req, res)=>{
-        const user_email = req.query.user_email
+        const user_email = req.query.user_email //will be replaced by email from verify
         const result = await listingsCollection.find({email:user_email}).toArray()
         res.send(result)
     })
@@ -137,6 +137,11 @@ async function run() {
 
     // ORDERS
     app.get("/orders", async(req, res)=>{
+        const user_email = req.query.user_email; //will be replaced by email from verify
+        if(user_email){
+            const result = await ordersCollection.find({buyer_email: user_email}).toArray();
+            return res.send(result)
+        }
         const result = await ordersCollection.find().toArray();
         res.send(result)
     })
