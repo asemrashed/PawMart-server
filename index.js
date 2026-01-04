@@ -60,7 +60,7 @@ const varifyFBToken = async(req, res, next)=>{
 
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
 
     const pawMartDB = client.db("PawMartDB")
     const usersCollection = pawMartDB.collection("usersCollection")
@@ -81,6 +81,34 @@ async function run() {
         }
         res.send({ message: "User already exist" });
     })
+    app.patch("/users/:id", varifyFBToken, async(req, res)=>{
+        const {id} = req.params;
+        const updates = req.body;
+        if (!updates || Object.keys(updates).length === 0) {
+            return res.status(400).json({ error: "No fields to update" });
+        }
+        const query = {_id: new ObjectId(id)};
+        const cursor = { $set: updates}
+        const result = await usersCollection.updateOne(query, cursor)
+        res.send(result)
+    })
+    app.delete("/users/:id", varifyFBToken, async(req, res)=>{
+        const {id} = req.params;
+        try{
+            const query = {_id: new ObjectId(id)};
+            const result = await usersCollection.deleteOne(query)
+            res.send(result)
+        }catch(err){
+            console.log('..no User found..', err)
+            res.send({message: "User not found"})
+        }
+    })
+    // app.get("/users/profile/:email", async(req, res)=>{
+    //     const email = req.params.email;
+    //     const query = {email: email}
+    //     const result = await usersCollection.findOne(query)
+    //     res.send(result)
+    // })
 
     // LISTING with CATEGORY Option
     app.get("/listings", async(req, res)=>{
@@ -93,7 +121,7 @@ async function run() {
         res.send(result)
     })
     app.get("/latest-listings", async(req, res)=>{
-        const result= await listingsCollection.find().sort({created_at:-1}).limit(6).toArray()
+        const result= await listingsCollection.find().sort({created_at:-1}).limit(8).toArray()
         res.send(result)
     })
     app.post("/listings", varifyFBToken, async(req, res)=>{
@@ -162,9 +190,10 @@ async function run() {
 
     // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } finally {
+  } catch(err) {
     // Ensures that the client will close when you finish/error
     // await client.close();
+    console.log('mongo connection error', err)
   }
 }
 
