@@ -162,6 +162,14 @@ async function run() {
         res.send(result)
     })
 
+    // ADMIN STATS
+    app.get("/admin-stats", async(req, res) => {
+        const totalUsers = await usersCollection.estimatedDocumentCount();
+        const totalPosts = await listingsCollection.estimatedDocumentCount();
+        const totalOrders = await ordersCollection.estimatedDocumentCount();
+        res.send({ totalUsers, totalPosts, totalOrders });
+    })
+
     // ORDERS
     app.get("/orders", varifyFBToken, async(req, res)=>{
         const user_email = req.user_email; 
@@ -169,6 +177,11 @@ async function run() {
             const result = await ordersCollection.find({buyer_email: user_email}).toArray();
             return res.send(result)
         }
+    })
+    
+    app.get("/all-orders", varifyFBToken, async(req, res)=>{
+        const result = await ordersCollection.find().toArray();
+        res.send(result)
     })
     app.post("/orders",varifyFBToken, async(req, res)=>{
         const newOrder = req.body;
